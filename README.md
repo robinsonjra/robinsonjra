@@ -1,4 +1,3 @@
-
 Hi! I'm Robinson,
 - 💻 Technical Leader
 - 🚀 DevOps (SRE)
