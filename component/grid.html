@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Component</title>
+    <link href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-quartz.css" rel="stylesheet">
+</head>
+<body>
+    <button id="clear-button" disabled>Limpiar Filtros</button>
+    <br><br>
+    <button id="export-button">Exportar todos los datos</button>
+    <br><br>
+
+    <div id="gridQuartz" style="height: 400px; width: 100%;" class="ag-theme-quartz"></div>
+    <br><br>
+    <div id="gridDark" style="height: 400px; width: 100%;" class="ag-theme-quartz-dark"></div>
+
+
+    <div id="selectData" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid black;">
+        <span id="modalContent"></span><br>
+        <button onclick="closePopup()">Cerrar</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@32.1.0/dist/ag-grid-community.js"></script>
+    <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        function openPopup() {
+            var modal = document.getElementById('selectData');
+            modal.style.display = 'block';
+        };
+
+        function closePopup() {
+            var modal = document.getElementById('selectData');
+            modal.style.display = 'none';
+        };
+
+
+        function onRowClicked(event) {
+            var rowData = event.data;
+            var modalContent = document.getElementById('modalContent');
+            modalContent.textContent = `Atleta: ${rowData.athlete}, Edad: ${rowData.age}`;
+            openPopup();
+        };
+
+        var columnDefs = [
+            { field: "athlete", headerName: "Atleta", filter: 'agTextColumnFilter', filterParams: { filterOptions: ["contains", "notContains"], maxNumConditions: 1 } },
+            { field: "age", headerName: "Edad", filter: 'agNumberColumnFilter' },
+            { field: "country", headerName: "País", filter: 'agTextColumnFilter' },
+            { field: "year", headerName: "Año", filter: 'agNumberColumnFilter' },
+            { field: "date", headerName: "Fecha", filter: 'agDateColumnFilter' },
+            { field: "sport", headerName: "Deporte", filter: 'agTextColumnFilter', filterParams: { caseSensitive: true, defaultOption: "startsWith" } },
+            { field: "gold", headerName: "Oro", filter: 'agNumberColumnFilter' },
+            { field: "silver", headerName: "Plata", filter: 'agNumberColumnFilter' },
+            { field: "bronze", headerName: "Bronce", filter: 'agNumberColumnFilter' },
+            { field: "total", headerName: "Total", filter: 'agNumberColumnFilter' }
+        ];
+
+        var gridOptions = {
+            defaultColDef: {
+                filter: true,
+                flex: 1
+            },
+            columnDefs: columnDefs,
+            rowData: null,
+            localeText: {
+                before: 'antes de',
+                after: 'despues de',
+                contains: 'contiene',
+                notContains: 'no contiene',
+                startsWith: 'empieza con',
+                endsWith: 'termina con',
+                equals: 'es igual a',
+                notEqual: 'no es igual a',
+                blank: 'en blanco',
+                notBlank: 'no en blanco',
+                lessThan: 'menor que',
+                greaterThan: 'mayor que',
+                lessThanOrEqual: 'menor o igual que',
+                greaterThanOrEqual: 'mayor o igual que',
+                inRange: 'en rango',
+                applyFilter: 'Aplicar filtro',
+                resetFilter: 'Reiniciar filtro',
+                clearFilter: 'Limpiar filtro',
+                andCondition: 'Y',
+                orCondition: 'O',
+                filterOoo: 'Filtro...',
+                loadingOoo: 'Cargando...',
+                noRowsToShow: 'No hay filas para mostrar',
+            },
+            onRowClicked: onRowClicked
+        };
+
+        var gridQuartz = document.querySelector('#gridQuartz');
+        var gridQuartzInstance = agGrid.createGrid(gridQuartz, gridOptions);
+
+        var gridDark = document.querySelector('#gridDark');
+        var gridDarkInstance = agGrid.createGrid(gridDark, gridOptions);
+
+        var oTabulator;
+
+        function clearFilters() {
+            if (gridInstance) {
+                gridInstance.setFilterModel(null);
+                gridInstance.onFilterChanged();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById('clear-button').disabled = false;
+
+            fetch("https://robinsonjra.github.io/robinsonjra/example-assets/olympic-winners.json")
+            .then((response) => response.json())
+            .then((data) => {
+                gridQuartzInstance.setGridOption("rowData", data);
+                gridDarkInstance.setGridOption("rowData", data);
+
+                oTabulator = new Tabulator(document.createElement('div'), {
+                    data: data,
+                    layout:"fitColumns",
+                    columns:[
+                        {title:"Atleta", field:"athlete", sorter:"string"},
+                        {title:"Edad", field:"age", sorter:"number"},
+                        {title:"Fecha", field:"date", sorter:"datetime"}
+                    ],
+                    visible: false
+                });
+            });
+            
+            document.getElementById('clear-button').addEventListener('click', clearFilters);
+
+            document.getElementById('export-button').addEventListener('click', function(){
+                table.download("xlsx", "olympic-winners.xlsx");
+            });
+        });
+    </script>
+</body>
+</html>
