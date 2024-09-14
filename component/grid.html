@@ -102,9 +102,14 @@
         var oTabulator;
 
         function clearFilters() {
-            if (gridInstance) {
-                gridInstance.setFilterModel(null);
-                gridInstance.onFilterChanged();
+            if (gridQuartzInstance) {
+                gridQuartzInstance.setFilterModel(null);
+                gridQuartzInstance.onFilterChanged();
+            }
+
+            if (gridDarkInstance) {
+                gridDarkInstance.setFilterModel(null);
+                gridDarkInstance.onFilterChanged();
             }
         }
 
@@ -132,7 +137,7 @@
             document.getElementById('clear-button').addEventListener('click', clearFilters);
 
             document.getElementById('export-button').addEventListener('click', function(){
-                table.download("xlsx", "olympic-winners.xlsx");
+                oTabulator.download("xlsx", "olympic-winners.xlsx");
             });
         });
     </script>
